@@ -1,0 +1,191 @@
+from tortoise import BaseDBAsyncClient
+
+
+async def upgrade(db: BaseDBAsyncClient) -> str:
+    return """
+        CREATE TABLE IF NOT EXISTS "admin" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "username" VARCHAR(60),
+    "pwd" VARCHAR(255),
+    "salt" VARCHAR(255),
+    "firstname" VARCHAR(255) NOT NULL,
+    "lastname" VARCHAR(255) NOT NULL,
+    "email" VARCHAR(255) NOT NULL,
+    "access" VARCHAR(255) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "country" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "name" VARCHAR(255) NOT NULL,
+    "code" VARCHAR(3) NOT NULL,
+    "is_actived" INT NOT NULL  DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS "dateofcreation" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS "genre" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "label" VARCHAR(60) NOT NULL,
+    "is_actived" INT NOT NULL  DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS "hobies" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "label" VARCHAR(255) NOT NULL,
+    "is_actived" INT NOT NULL  DEFAULT 1
+);
+CREATE TABLE IF NOT EXISTS "hobiestrans" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "label" VARCHAR(255) NOT NULL,
+    "lang" VARCHAR(255) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "notificationtype" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "label" VARCHAR(255) NOT NULL,
+    "is_actived" INT NOT NULL  DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS "orientation" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "label" VARCHAR(60) NOT NULL,
+    "is_actived" INT NOT NULL  DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS "account" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "username" VARCHAR(60),
+    "pwd" VARCHAR(255),
+    "salt" VARCHAR(255),
+    "phonenumber" VARCHAR(20),
+    "auth_code" VARCHAR(5),
+    "auth_expiration_date" TIMESTAMP,
+    "sexe" VARCHAR(60),
+    "about" TEXT,
+    "relation" VARCHAR(60),
+    "heigth" REAL,
+    "hair" VARCHAR(60),
+    "child" VARCHAR(60),
+    "drink" VARCHAR(60),
+    "smoking" VARCHAR(60),
+    "birthday" DATE,
+    "ishidden" INT   DEFAULT 0,
+    "country_id" CHAR(36) REFERENCES "country" ("id") ON DELETE CASCADE,
+    "orientation_id" CHAR(36) REFERENCES "orientation" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "banned" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "motif" TEXT NOT NULL,
+    "account_id" CHAR(36) NOT NULL REFERENCES "account" ("id") ON DELETE CASCADE,
+    "do_by_id" CHAR(36) NOT NULL REFERENCES "admin" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "like" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "is_match" INT NOT NULL  DEFAULT 0,
+    "isDeleted" INT NOT NULL  DEFAULT 0,
+    "deleted_by_id" CHAR(36) NOT NULL REFERENCES "account" ("id") ON DELETE CASCADE,
+    "initiate_by_id" CHAR(36) NOT NULL REFERENCES "account" ("id") ON DELETE CASCADE,
+    "relates_to_id" CHAR(36) NOT NULL REFERENCES "account" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "favories" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "is_actived" INT NOT NULL  DEFAULT 1,
+    "like_id" INT NOT NULL REFERENCES "like" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "notificationparams" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "web" INT NOT NULL  DEFAULT 0,
+    "app" INT NOT NULL  DEFAULT 0,
+    "email" INT NOT NULL  DEFAULT 1,
+    "account_id" CHAR(36) NOT NULL REFERENCES "account" ("id") ON DELETE CASCADE,
+    "type_id" CHAR(36) NOT NULL REFERENCES "notificationtype" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "privacy" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "visibility" INT NOT NULL  DEFAULT 1,
+    "share" INT NOT NULL  DEFAULT 1,
+    "show_location" INT NOT NULL  DEFAULT 1,
+    "show_gender" INT NOT NULL  DEFAULT 1,
+    "account_id" CHAR(36) NOT NULL REFERENCES "account" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "reporttype" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "label" VARCHAR(255) NOT NULL,
+    "is_actived" INT NOT NULL  DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS "reports" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "concern_id" CHAR(36) NOT NULL REFERENCES "account" ("id") ON DELETE CASCADE,
+    "report_type_id" CHAR(36) NOT NULL REFERENCES "reporttype" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "user" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "username" VARCHAR(60),
+    "pwd" VARCHAR(255),
+    "salt" VARCHAR(255)
+);
+CREATE TABLE IF NOT EXISTS "userhobies" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "is_actived" INT NOT NULL  DEFAULT 1,
+    "account_id" CHAR(36) NOT NULL REFERENCES "account" ("id") ON DELETE CASCADE,
+    "hobies_id" CHAR(36) NOT NULL REFERENCES "hobies" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "verified" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "proof" VARCHAR(255) NOT NULL,
+    "is_actived" INT NOT NULL  DEFAULT 0,
+    "Verified_by_id" CHAR(36) NOT NULL REFERENCES "admin" ("id") ON DELETE CASCADE,
+    "account_id" CHAR(36) NOT NULL REFERENCES "account" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "visite" (
+    "id" CHAR(36) NOT NULL  PRIMARY KEY,
+    "created_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL  DEFAULT CURRENT_TIMESTAMP,
+    "isSeen" INT NOT NULL  DEFAULT 0,
+    "view_by_id" CHAR(36) NOT NULL REFERENCES "account" ("id") ON DELETE CASCADE,
+    "viewer_id" CHAR(36) NOT NULL REFERENCES "account" ("id") ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "aerich" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    "version" VARCHAR(255) NOT NULL,
+    "app" VARCHAR(100) NOT NULL,
+    "content" JSON NOT NULL
+);"""
+
+
+async def downgrade(db: BaseDBAsyncClient) -> str:
+    return """
+        """
